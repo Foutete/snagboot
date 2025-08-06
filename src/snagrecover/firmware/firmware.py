@@ -219,6 +219,10 @@ def run_firmware(port, fw_name: str, subfw_name: str = ""):
 		from snagrecover.firmware.zynqmp_fw import zynqmp_run
 
 		zynqmp_run(port, fw_name, fw_blob, subfw_name)
+	elif soc_family == "bcm":
+		from snagrecover.firmware.bcm import bcm_run
+
+		bcm_run(port, fw_name, fw_blob, subfw_name)
 	else:
 		raise Exception(f"Unsupported SoC family {soc_family}")
 	logger.info(f"Done installing firmware {fw_name}")
