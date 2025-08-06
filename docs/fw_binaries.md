@@ -305,3 +305,50 @@ configuration:
    - For EVM boards: `fip-evm.bin`
    - For M2 boards: `fip-m2.bin`
    - For HDDL2 boards: `fip-hddl2.bin`
+
+
+## For Broadcom BCM devices
+
+[example](../src/snagrecover/templates/bcm2711.yaml)
+
+In the case of Raspberry Pi, most firmwares can be found in their GitHub repositories [github.com/raspberrypi](https://github.com/raspberrypi/)
+along with a [genimage.cfg](https://github.com/raspberrypi/buildroot/blob/mass-storage-gadget64/board/raspberrypi64-mass-storage-gadget/genimage.cfg) file wich can be taken as a reference for building the DOS partition image using the [genimage](https://github.com/pengutronix/genimage) tool.
+
+
+**bootfiles:** tar archive containing the FSBL and some of the firmwares required by the FSBL to boot U-Boot. Firmwares can optionally be located inside of a subfolder, named 2711|2712 for bcm2711|bcm2712 respectively.
+ - bootcode\<n>.bin: the FSBL, which act as USB client requesting firmware to load. For bootcode, \<n> is 4|5 for bcm2711|bcm2712 respectively.
+ - mcb.bin: RAM init
+ - memsys\<nn>.bin: more RAM inits
+ - bootmain: the loader for the disk image
+
+In the case of Raspberry Pi, a ready made bootfiles can be found [here](https://github.com/raspberrypi/usbboot/commit/798ea2ef893bfa11fe3dba0e088cbc9b862184a1).
+
+configuration:
+ * path
+
+
+**boot:** DOS partition image with the first partition bootable with a FAT filesystem containing:
+ - \<board>.dtb: the compiled device tree
+ - \<board>.dtbo: the device tree overlays
+ - config.txt: a file which specifies to `start<n>.elf` to boot U-Boot proper instead of Linux (`kernel=u-boot.bin`) and to start in 64 bits mode (`arm_64bit=1`)
+ - cmdline.txt: linux kernel command line, as we don't boot linux you can keep it empty.
+ - start\<n>.elf: the SSBL
+ - fixup\<n>.dat: the SSBL linker file (found in pair with start\<n>.elf)
+ - U-Boot proper (`u-boot.bin`)
+
+ This DOS partition image can be generated using the `genimage` tool. In the case of Raspberry Pi, [ready made images already exists](https://github.com/raspberrypi/usbboot/blob/master/mass-storage-gadget64/boot.img), however they do not contain a U-Boot but a Linux. You can use them if you provide U-Boot in **u-boot**. In that case, Snagrecover will create a temporary copy of it and do what is necessary to boot U-Boot instead of Linux.
+
+configuration:
+ * path
+
+
+**config:** config text file with parameter to setup the board to boot from RAM (`boot_ramdisk=1`)
+
+configuration:
+ * path
+
+
+**u-boot:** (optional) U-Boot proper. You can use this option if you want Snagrecover to modify **boot** firmware to add U-Boot to it (eg you are using a ready made **boot** firmware from RPi). If your **boot** firmware already contains a U-Boot and you want to use it, you can skip this option.
+
+configuration:
+  * path
